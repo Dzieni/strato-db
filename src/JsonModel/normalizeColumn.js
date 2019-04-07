@@ -64,21 +64,24 @@ export const normalizeColumn = (col, name) => {
 		}
 	}
 	if (col.falsyBool) {
-		const prev = col.value
-		if (prev) {
-			col.value = async function(o) {
-				const r = await prev.call(this, o)
-				return r ? true : undefined
+		const parseFalsyBool = v => (v ? true : undefined)
+		const {value, parse} = col
+		if (value) {
+			col.value = function(o) {
+				const r = value.call(this, o)
+				return r
+					? typeof r.then === 'function'
+						? r.then(parseFalsyBool)
+						: true
+					: undefined
 			}
 		} else {
-			col.value = o => {
-				const v = get(o, col.path)
-				return v ? true : undefined
-			}
+			col.value = o => parseFalsyBool(get(o, col.path))
 		}
 		if (col.real) {
-			if (col.parse) throw new TypeError(`${name}: falsyBool can't have parse`)
-			col.parse = v => (v ? true : undefined)
+			col.parse = parse
+				? v => parseFalsyBool(parse.call(this, v))
+				: parseFalsyBool
 		}
 	}
 	if (!col.real && col.stringify)

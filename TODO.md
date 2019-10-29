@@ -54,6 +54,19 @@
 
 ### Important
 
+- FTS5 support for text searching on columns
+  - It uses the table as a backing table
+  - Real columns marked `fts: true|object` generate a FTS5 index
+    - `true` is shorthand for `{group: 'all', allColumns: false}`
+    - `group` is a name for the index so you can group columns in separate indexes, for example by language
+    - `allColumns`, if true, means to search all columns for this group. This can be used on non-real columns
+    - Content columns have to be real columns, otherwise FTS5 can't refer to them. So, throw an error if the column not real except if `allColumns: true`.
+    - `textSearch: true` should be deprecated and means `fts: {group: 'all'}` if `real: true`
+    - other options could be added to configure tokenizing
+  - one index per `fts.group` value (, defaults to `'all'`)
+  - Searching passes the search argument to the FTS5 index of the group
+    - The search is limited to the column unless `allColumns: true`
+  - Updates to the FTS index are applied by JsonModel, not triggers? why/why not
 - [ ] unique indexes should fail when inserting non-unique, not overwrite other. ID takes precedence.
 
   ```sql
@@ -95,7 +108,6 @@
 - Test for `uniqueSlugId`
 - Booleans should be stored as 0/1 if real, except when sparse indexing, then NULL/1. If not real, the index and where clause should be `IFNULL(json..., false)`
 - Support operation without DB, in-memory with initial data, for e.g. Cloudflare workers that can't have native code
-- FTS5 support for text searching
 
 ## Queue
 

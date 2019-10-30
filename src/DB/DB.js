@@ -54,6 +54,7 @@ class DB extends SQLite {
 			  }
 		super({...options, onDidOpen})
 		this.options.migrations = migrations
+		this.tables={}
 	}
 
 	static sql = sql
@@ -64,6 +65,12 @@ class DB extends SQLite {
 				new Error('!!! db.models is deprecated, use db.store instead')
 			)
 		return this.store
+	}
+
+	ensureTable({name, columns}) {
+		if (!this.tables[name]) this.tables.name={}
+		for (const )
+		
 	}
 
 	/**
